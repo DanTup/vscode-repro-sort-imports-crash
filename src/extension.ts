@@ -1,26 +1,32 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-repro-sort-imports-crash" is now active!');
+	vscode.languages.registerDocumentSemanticTokensProvider(
+		{ language: "danny" },
+		{
+			provideDocumentSemanticTokens(document, token) {
+				return new vscode.SemanticTokens(new Uint32Array([0, 0, 6, 1, 0, 0, 7, 33, 15, 0, 1, 0, 6, 1, 0, 0, 7, 23, 15, 0, 1, 0, 6, 1, 0, 0, 7, 22, 15, 0, 1, 0, 6, 1, 0, 0, 7, 21, 15, 0, 1, 0, 6, 1, 0, 0, 7, 26, 15, 0, 1, 0, 6, 1, 0, 0, 7, 20, 15, 0, 1, 0, 6, 1, 0, 0, 7, 30, 15, 0, 0, 31, 6, 1, 0, 0, 7, 22, 15, 0]), undefined);
+			},
+		},
+		{
+			"tokenModifiers": ["documentation", "constructor", "declaration", "importPrefix", "instance", "static", "escape", "annotation", "control", "label", "interpolation", "void"],
+			"tokenTypes": ["annotation", "keyword", "class", "comment", "method", "variable", "parameter", "enum", "enumMember", "type", "source", "property", "namespace", "boolean", "number", "string", "function", "typeParameter"]
+		},
+	);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-repro-sort-imports-crash.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-repro-sort-imports-crash!');
-	});
+	await new Promise((resolve) => setTimeout(resolve, 1000));
 
-	context.subscriptions.push(disposable);
+	const content1 = "export 'interior_material_selector.dart';\nexport 'mileage_selector.dart';\nexport 'owners_selector.dart';\nexport 'price_selector.dart';\nexport 'seat_count_selector.dart';\nexport 'year_selector.dart';\nexport 'winter_options_selector.dart';export 'camera_selector.dart';";
+	const content2 = "export 'camera_selector.dart';\nexport 'interior_material_selector.dart';\nexport 'mileage_selector.dart';\nexport 'owners_selector.dart';\nexport 'price_selector.dart';\nexport 'seat_count_selector.dart';\nexport 'winter_options_selector.dart';\nexport 'year";
+
+	const doc = await vscode.workspace.openTextDocument({ language: 'danny', content: content1 });
+	const editor = await vscode.window.showTextDocument(doc);
+	await new Promise((resolve) => setTimeout(resolve, 3000));
+
+	const edit = new vscode.WorkspaceEdit();
+	edit.replace(doc.uri, new vscode.Range(new vscode.Position(0, 0), new vscode.Position(6, 52)), content2);
+	await vscode.workspace.applyEdit(edit);
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

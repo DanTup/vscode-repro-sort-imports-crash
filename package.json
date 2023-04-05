@@ -9,13 +9,12 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["*"],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
+    "languages": [
       {
-        "command": "vscode-repro-sort-imports-crash.helloWorld",
-        "title": "Hello World"
+        "id": "danny"
       }
     ]
   },
